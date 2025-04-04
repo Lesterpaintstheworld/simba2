@@ -86,7 +86,14 @@ def send_message(blueprint_id, kin_id, content, images=None, attachments=None,
     
     # Effectuer la requête POST
     try:
+        print(f"Envoi de la requête à {api_url}")
+        print(f"Payload: {json.dumps(payload, indent=2)}")
+        
         response = requests.post(api_url, headers=headers, json=payload)
+        
+        print(f"Code de statut HTTP: {response.status_code}")
+        print(f"Réponse brute: {response.text}")
+        
         response.raise_for_status()  # Lever une exception si la requête a échoué
         
         # Analyser la réponse JSON
@@ -150,7 +157,15 @@ if __name__ == "__main__":
     if result:
         print("\nRéponse de Simba:")
         print("-" * 50)
-        print(result.get("content", "Pas de contenu dans la réponse"))
+        
+        # Vérifier si la réponse contient du contenu
+        content = result.get("content")
+        if content:
+            print(content)
+        else:
+            print("Pas de contenu dans la réponse. Réponse complète:")
+            print(json.dumps(result, indent=2))
+        
         print("-" * 50)
         print(f"ID du message: {result.get('id')}")
         print(f"Statut: {result.get('status')}")
@@ -165,7 +180,10 @@ if __name__ == "__main__":
             
             if telegram_token and telegram_chat_id:
                 # Préparer le message pour Telegram
-                telegram_message = f"*Message de Simba*\n\n{result.get('content', 'Pas de contenu')}"
+                if content:
+                    telegram_message = f"*Message de Simba*\n\n{content}"
+                else:
+                    telegram_message = "*Message de Simba*\n\nSimba n'a pas répondu. Il est peut-être en train de réfléchir..."
                 
                 # Envoyer la notification Telegram de manière asynchrone
                 asyncio.run(send_telegram_notification(telegram_message, telegram_chat_id, telegram_token))

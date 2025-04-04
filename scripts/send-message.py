@@ -12,7 +12,7 @@ load_dotenv()
 
 def send_message(blueprint_id, kin_id, content, images=None, attachments=None, 
                 model="claude-3-5-haiku-latest", history_length=25, 
-                mode="creative", add_system=None):
+                add_system=None):
     """
     Envoie un message à un Kin spécifique.
     
@@ -24,7 +24,6 @@ def send_message(blueprint_id, kin_id, content, images=None, attachments=None,
         attachments (list, optional): Liste des fichiers à joindre
         model (str, optional): Le modèle à utiliser. Par défaut "claude-3-5-haiku-latest"
         history_length (int, optional): Longueur de l'historique à considérer. Par défaut 25
-        mode (str, optional): Mode de réponse ("creative", "balanced", "precise"). Par défaut "creative"
         add_system (str, optional): Instructions système supplémentaires
     
     Returns:
@@ -49,8 +48,7 @@ def send_message(blueprint_id, kin_id, content, images=None, attachments=None,
     payload = {
         "content": content,
         "model": model,
-        "history_length": history_length,
-        "mode": mode
+        "history_length": history_length
     }
     
     # Ajouter les instructions système si spécifiées
@@ -130,8 +128,6 @@ if __name__ == "__main__":
     parser.add_argument("--attachments", nargs="+", help="Fichiers à joindre")
     parser.add_argument("--model", default="claude-3-5-haiku-latest", help="Modèle à utiliser")
     parser.add_argument("--history-length", type=int, default=25, help="Longueur de l'historique")
-    parser.add_argument("--mode", default="creative", choices=["creative", "balanced", "precise"], 
-                        help="Mode de réponse")
     parser.add_argument("--add-system", help="Instructions système supplémentaires")
     parser.add_argument("--no-telegram", action="store_true", help="Désactiver la notification Telegram")
     args = parser.parse_args()
@@ -149,7 +145,6 @@ if __name__ == "__main__":
         attachments=args.attachments,
         model=args.model,
         history_length=args.history_length,
-        mode=args.mode,
         add_system=args.add_system
     )
     
@@ -169,7 +164,6 @@ if __name__ == "__main__":
         print("-" * 50)
         print(f"ID du message: {result.get('message_id') or result.get('id')}")
         print(f"Statut: {result.get('status')}")
-        print(f"Mode: {result.get('mode')}")
         print(f"Horodatage: {result.get('timestamp')}")
         
         # Envoyer la notification Telegram si activée

@@ -112,8 +112,23 @@ def send_message_with_image(blueprint_id, kin_id, content, image_url, model="cla
         import base64
         image_data = base64.b64encode(image_response.content).decode('utf-8')
         
-        # Créer l'URL data
-        image_data_url = f"data:image/jpeg;base64,{image_data}"
+        # Déterminer le type MIME en fonction de l'URL ou du contenu
+        mime_type = "image/jpeg"  # Par défaut
+        
+        # Vérifier si l'URL contient une extension
+        if ".png" in image_url.lower():
+            mime_type = "image/png"
+        elif ".jpg" in image_url.lower() or ".jpeg" in image_url.lower():
+            mime_type = "image/jpeg"
+        elif ".gif" in image_url.lower():
+            mime_type = "image/gif"
+        elif ".webp" in image_url.lower():
+            mime_type = "image/webp"
+        
+        # Créer l'URL data avec le bon type MIME
+        image_data_url = f"data:{mime_type};base64,{image_data}"
+        
+        print(f"Type MIME détecté: {mime_type}")
         
         # Préparer le corps de la requête
         payload = {

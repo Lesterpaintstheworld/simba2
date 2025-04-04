@@ -3,6 +3,8 @@ import json
 import os
 import argparse
 import base64
+import telegram
+import asyncio
 from dotenv import load_dotenv
 
 # Charger les variables d'environnement
@@ -97,6 +99,22 @@ def send_message(blueprint_id, kin_id, content, images=None, attachments=None,
             print(f"Détails de l'erreur: {e.response.text}")
         return None
 
+async def send_telegram_notification(message, chat_id, token):
+    """
+    Envoie une notification Telegram.
+    
+    Args:
+        message (str): Le message à envoyer
+        chat_id (str): L'ID du chat Telegram
+        token (str): Le token du bot Telegram
+    """
+    try:
+        bot = telegram.Bot(token=token)
+        await bot.send_message(chat_id=chat_id, text=message, parse_mode='Markdown')
+        print("Notification Telegram envoyée avec succès")
+    except Exception as e:
+        print(f"Erreur lors de l'envoi de la notification Telegram: {e}")
+
 if __name__ == "__main__":
     # Configurer les arguments de ligne de commande
     parser = argparse.ArgumentParser(description="Envoyer un message à Simba")
@@ -108,6 +126,7 @@ if __name__ == "__main__":
     parser.add_argument("--mode", default="creative", choices=["creative", "balanced", "precise"], 
                         help="Mode de réponse")
     parser.add_argument("--add-system", help="Instructions système supplémentaires")
+    parser.add_argument("--no-telegram", action="store_true", help="Désactiver la notification Telegram")
     args = parser.parse_args()
     
     # Paramètres pour Simba
@@ -137,5 +156,20 @@ if __name__ == "__main__":
         print(f"Statut: {result.get('status')}")
         print(f"Rôle: {result.get('role')}")
         print(f"Horodatage: {result.get('timestamp')}")
+        
+        # Envoyer la notification Telegram si activée
+        if not args.no_telegram:
+            # Récupérer les informations Telegram depuis les variables d'environnement
+            telegram_token = os.getenv("TELEGRAM_BOT_TOKEN")
+            telegram_chat_id = os.getenv("TELEGRAM_CHAT_ID")
+            
+            if telegram_token and telegram_chat_id:
+                # Préparer le message pour Telegram
+                telegram_message = f"*Message de Simba*\n\n{result.get('content', 'Pas de contenu')}"
+                
+                # Envoyer la notification Telegram de manière asynchrone
+                asyncio.run(send_telegram_notification(telegram_message, telegram_chat_id, telegram_token))
+            else:
+                print("Variables d'environnement TELEGRAM_BOT_TOKEN et/ou TELEGRAM_CHAT_ID non définies")
     else:
         print("Échec de l'envoi du message")

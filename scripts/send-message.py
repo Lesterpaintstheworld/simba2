@@ -158,8 +158,8 @@ if __name__ == "__main__":
         print("\nRéponse de Simba:")
         print("-" * 50)
         
-        # Vérifier si la réponse contient du contenu
-        content = result.get("content")
+        # Vérifier si la réponse contient du contenu (dans le champ "response" ou "content")
+        content = result.get("response") or result.get("content")
         if content:
             print(content)
         else:
@@ -167,9 +167,9 @@ if __name__ == "__main__":
             print(json.dumps(result, indent=2))
         
         print("-" * 50)
-        print(f"ID du message: {result.get('id')}")
+        print(f"ID du message: {result.get('message_id') or result.get('id')}")
         print(f"Statut: {result.get('status')}")
-        print(f"Rôle: {result.get('role')}")
+        print(f"Mode: {result.get('mode')}")
         print(f"Horodatage: {result.get('timestamp')}")
         
         # Envoyer la notification Telegram si activée
@@ -181,6 +181,7 @@ if __name__ == "__main__":
             if telegram_token and telegram_chat_id:
                 # Préparer le message pour Telegram
                 if content:
+                    # Nettoyer les caractères Unicode pour Telegram si nécessaire
                     telegram_message = f"*Message de Simba*\n\n{content}"
                 else:
                     telegram_message = "*Message de Simba*\n\nSimba n'a pas répondu. Il est peut-être en train de réfléchir..."

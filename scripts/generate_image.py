@@ -10,14 +10,14 @@ from dotenv import load_dotenv
 # Charger les variables d'environnement
 load_dotenv()
 
-def generate_image(blueprint_id, kin_id, prompt, aspect_ratio="ASPECT_1_1", model="V_2", magic_prompt_option="AUTO"):
+def generate_image(blueprint_id, kin_id, message, aspect_ratio="ASPECT_1_1", model="V_2", magic_prompt_option="AUTO"):
     """
-    Génère une image basée sur un prompt en utilisant l'API Ideogram via KinOS.
+    Génère une image basée sur un message en utilisant l'API Ideogram via KinOS.
     
     Args:
         blueprint_id (str): L'ID du blueprint
         kin_id (str): L'ID du Kin
-        prompt (str): Le prompt pour générer l'image
+        message (str): Le message pour générer l'image
         aspect_ratio (str, optional): Ratio d'aspect de l'image. Par défaut "ASPECT_1_1"
         model (str, optional): Modèle à utiliser. Par défaut "V_2"
         magic_prompt_option (str, optional): Option de prompt magique. Par défaut "AUTO"
@@ -43,11 +43,11 @@ def generate_image(blueprint_id, kin_id, prompt, aspect_ratio="ASPECT_1_1", mode
     # Ajouter des mots-clés pour obtenir un style de dessin d'enfant
     child_drawing_keywords = ", 4 year old child drawing, crayon drawing, colorful scribbles, simple shapes, childish art style, cute doodles, messy coloring, kindergarten art, construction paper, finger painting, naive art"
     
-    # Préparer le corps de la requête avec le prompt enrichi
-    enhanced_prompt = f"{prompt}{child_drawing_keywords}"
+    # Préparer le corps de la requête avec le message enrichi
+    enhanced_message = f"{message}{child_drawing_keywords}"
     
     payload = {
-        "prompt": enhanced_prompt,
+        "message": enhanced_message,
         "aspect_ratio": aspect_ratio,
         "model": model,
         "magic_prompt_option": magic_prompt_option
@@ -56,8 +56,8 @@ def generate_image(blueprint_id, kin_id, prompt, aspect_ratio="ASPECT_1_1", mode
     # Effectuer la requête POST
     try:
         print(f"Envoi de la requête à {api_url}")
-        print(f"Prompt original: {prompt}")
-        print(f"Prompt enrichi: {enhanced_prompt}")
+        print(f"Message original: {message}")
+        print(f"Message enrichi: {enhanced_message}")
         print(f"Payload: {json.dumps(payload, indent=2)}")
         
         response = requests.post(api_url, headers=headers, json=payload)
@@ -164,7 +164,7 @@ async def send_telegram_notification(message, image_url, chat_id, token):
 if __name__ == "__main__":
     # Configurer les arguments de ligne de commande
     parser = argparse.ArgumentParser(description="Générer une image avec Simba")
-    parser.add_argument("prompt", help="Le prompt pour générer l'image")
+    parser.add_argument("message", help="Le message pour générer l'image")
     parser.add_argument("--aspect-ratio", default="ASPECT_1_1", 
                         choices=["ASPECT_1_1", "ASPECT_16_9", "ASPECT_9_16", "ASPECT_4_3", "ASPECT_3_4"],
                         help="Ratio d'aspect de l'image")
@@ -172,7 +172,7 @@ if __name__ == "__main__":
     parser.add_argument("--magic-prompt", default="AUTO", 
                         choices=["AUTO", "NONE", "LOW", "MEDIUM", "HIGH", "VERY_HIGH"],
                         help="Option de prompt magique")
-    parser.add_argument("--message", default="Voici l'image que j'ai dessinée pour toi!", 
+    parser.add_argument("--caption", default="Voici l'image que j'ai dessinée pour toi!", 
                         help="Message à envoyer avec l'image")
     parser.add_argument("--no-telegram", action="store_true", help="Désactiver la notification Telegram")
     parser.add_argument("--no-send-to-kin", action="store_true", help="Ne pas envoyer l'image au Kin")
@@ -183,11 +183,11 @@ if __name__ == "__main__":
     kin_id = "simba"
     
     # Générer l'image
-    print(f"Génération de l'image avec le prompt: {args.prompt}")
+    print(f"Génération de l'image avec le message: {args.message}")
     result = generate_image(
         blueprint_id=blueprint_id,
         kin_id=kin_id,
-        prompt=args.prompt,
+        message=args.message,
         aspect_ratio=args.aspect_ratio,
         model=args.model,
         magic_prompt_option=args.magic_prompt
@@ -199,7 +199,7 @@ if __name__ == "__main__":
         print("-" * 50)
         print(f"ID: {result.get('id')}")
         print(f"Statut: {result.get('status')}")
-        print(f"Prompt: {result.get('prompt')}")
+        print(f"Message: {result.get('message')}")
         print(f"Créée le: {result.get('created_at')}")
         
         # Récupérer l'URL de l'image
@@ -216,7 +216,7 @@ if __name__ == "__main__":
                 message_result = send_message_with_image(
                     blueprint_id=blueprint_id,
                     kin_id=kin_id,
-                    content=args.message,
+                    content=args.caption,
                     image_url=image_url
                 )
                 
@@ -241,7 +241,7 @@ if __name__ == "__main__":
                 
                 if telegram_token and telegram_chat_id:
                     # Préparer le message pour Telegram
-                    telegram_message = f"Simba a dessiné: {args.prompt}"
+                    telegram_message = f"Simba a dessiné: {args.message}"
                     
                     # Envoyer la notification Telegram de manière asynchrone
                     asyncio.run(send_telegram_notification(telegram_message, image_url, telegram_chat_id, telegram_token))

@@ -202,9 +202,14 @@ if __name__ == "__main__":
         print(f"Message: {result.get('message')}")
         print(f"Créée le: {result.get('created_at')}")
         
-        # Récupérer l'URL de l'image
+        # Récupérer l'URL de l'image - Modification pour s'adapter à la structure de réponse
+        # Essayer d'abord le chemin attendu
         image_url = result.get('data', {}).get('url')
         local_path = result.get('local_path')
+        
+        # Si l'URL n'est pas trouvée, essayer le nouveau chemin dans la réponse
+        if not image_url and 'result' in result and 'data' in result['result'] and len(result['result']['data']) > 0:
+            image_url = result['result']['data'][0].get('url')
         
         if image_url:
             print(f"URL de l'image: {image_url}")

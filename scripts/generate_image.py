@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 # Charger les variables d'environnement
 load_dotenv()
 
-def generate_image(blueprint_id, kin_id, message, aspect_ratio="ASPECT_1_1", model="V_2", magic_prompt_option="AUTO"):
+def generate_image(blueprint_id, kin_id, message, aspect_ratio="ASPECT_1_1", model="V_2A", magic_prompt_option="AUTO"):
     """
     Génère une image basée sur un message en utilisant l'API Ideogram via KinOS.
     
@@ -168,7 +168,7 @@ if __name__ == "__main__":
     parser.add_argument("--aspect-ratio", default="ASPECT_1_1", 
                         choices=["ASPECT_1_1", "ASPECT_16_9", "ASPECT_9_16", "ASPECT_4_3", "ASPECT_3_4"],
                         help="Ratio d'aspect de l'image")
-    parser.add_argument("--model", default="V_2", choices=["V_1", "V_2"], help="Modèle à utiliser")
+    parser.add_argument("--model", default="V_2A", choices=["V_1", "V_2", "V_2A"], help="Modèle à utiliser")
     parser.add_argument("--magic-prompt", default="AUTO", 
                         choices=["AUTO", "NONE", "LOW", "MEDIUM", "HIGH", "VERY_HIGH"],
                         help="Option de prompt magique")

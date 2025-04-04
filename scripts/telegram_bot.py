@@ -6,6 +6,7 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 from dotenv import load_dotenv
 import requests
 import json
+import sys
 
 # Configuration du logging
 logging.basicConfig(
@@ -25,6 +26,9 @@ KINOS_API_KEY = os.getenv("KINOS_API_KEY")
 # Configuration de Simba
 BLUEPRINT_ID = "simba"
 KIN_ID = "simba"
+
+# Configuration pour Render
+PORT = int(os.environ.get('PORT', 8080))
 
 async def send_to_kinos(content, images=None):
     """
@@ -132,6 +136,11 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     # Envoyer la réponse
     await update.message.reply_text(response)
 
+async def webhook(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Gestionnaire pour les webhooks."""
+    # Traiter les mises à jour reçues via webhook
+    logger.info(f"Webhook reçu: {update}")
+
 def main() -> None:
     """Fonction principale pour démarrer le bot."""
     # Vérifier que les variables d'environnement nécessaires sont définies
@@ -152,9 +161,26 @@ def main() -> None:
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     application.add_handler(MessageHandler(filters.PHOTO, handle_photo))
     
-    # Démarrer le bot
-    logger.info("Bot Telegram démarré")
-    application.run_polling(allowed_updates=Update.ALL_TYPES)
+    # Déterminer le mode de fonctionnement (polling ou webhook)
+    # Sur Render, nous utilisons le webhook
+    if 'RENDER' in os.environ:
+        # Configuration du webhook pour Render
+        webhook_url = os.environ.get('RENDER_EXTERNAL_URL')
+        if webhook_url:
+            logger.info(f"Démarrage en mode webhook sur Render: {webhook_url}")
+            application.run_webhook(
+                listen="0.0.0.0",
+                port=PORT,
+                url_path=TELEGRAM_BOT_TOKEN,
+                webhook_url=f"{webhook_url}/{TELEGRAM_BOT_TOKEN}"
+            )
+        else:
+            logger.error("Variable RENDER_EXTERNAL_URL non définie")
+            sys.exit(1)
+    else:
+        # En développement local, utiliser le polling
+        logger.info("Démarrage en mode polling (développement local)")
+        application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == "__main__":
     main()

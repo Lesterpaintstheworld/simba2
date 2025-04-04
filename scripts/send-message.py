@@ -175,10 +175,10 @@ if __name__ == "__main__":
             if telegram_token and telegram_chat_id:
                 # Préparer le message pour Telegram
                 if content:
-                    # Nettoyer les caractères Unicode pour Telegram si nécessaire
-                    telegram_message = f"*Message de Simba*\n\n{content}"
+                    # Envoyer directement le contenu sans préfixe
+                    telegram_message = content
                 else:
-                    telegram_message = "*Message de Simba*\n\nSimba n'a pas répondu. Il est peut-être en train de réfléchir..."
+                    telegram_message = "Simba n'a pas répondu. Il est peut-être en train de réfléchir..."
                 
                 # Envoyer la notification Telegram de manière asynchrone
                 asyncio.run(send_telegram_notification(telegram_message, telegram_chat_id, telegram_token))

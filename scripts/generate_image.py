@@ -40,9 +40,14 @@ def generate_image(blueprint_id, kin_id, prompt, aspect_ratio="ASPECT_1_1", mode
         "Content-Type": "application/json"
     }
     
-    # Préparer le corps de la requête
+    # Ajouter des mots-clés pour obtenir un style de dessin d'enfant
+    child_drawing_keywords = ", 4 year old child drawing, crayon drawing, colorful scribbles, simple shapes, childish art style, cute doodles, messy coloring, kindergarten art, construction paper, finger painting, naive art"
+    
+    # Préparer le corps de la requête avec le prompt enrichi
+    enhanced_prompt = f"{prompt}{child_drawing_keywords}"
+    
     payload = {
-        "prompt": prompt,
+        "prompt": enhanced_prompt,
         "aspect_ratio": aspect_ratio,
         "model": model,
         "magic_prompt_option": magic_prompt_option
@@ -51,6 +56,8 @@ def generate_image(blueprint_id, kin_id, prompt, aspect_ratio="ASPECT_1_1", mode
     # Effectuer la requête POST
     try:
         print(f"Envoi de la requête à {api_url}")
+        print(f"Prompt original: {prompt}")
+        print(f"Prompt enrichi: {enhanced_prompt}")
         print(f"Payload: {json.dumps(payload, indent=2)}")
         
         response = requests.post(api_url, headers=headers, json=payload)

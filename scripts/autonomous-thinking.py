@@ -72,7 +72,7 @@ def send_initiative_message():
     }
     
     payload = {
-        "content": "<initiative>Je vais envoyer un message à maman</initiative>",
+        "content": "<system>Compose un message pour maman</system>",
         "model": "claude-3-5-haiku-latest"
     }
 

@@ -58,11 +58,11 @@ def trigger_autonomous_thinking(blueprint_id, kin_id, iterations=3, wait_time=60
             print(f"Détails de l'erreur: {e.response.text}")
         return None
 
-def compose_message_for_mom(thoughts_result):
+def send_initiative_message():
     """
-    Utilise Claude pour composer un message personnalisé pour maman basé sur les réflexions.
+    Envoie un message d'initiative à KinOS pour composer un message pour maman.
     """
-    api_url = f"https://api.kinos-engine.ai/v2/blueprints/simba/kins/simba/analysis"
+    api_url = f"https://api.kinos-engine.ai/v2/blueprints/simba/kins/simba/messages"
     
     api_key = os.getenv("KINOS_API_KEY")
     
@@ -71,15 +71,9 @@ def compose_message_for_mom(thoughts_result):
         "Content-Type": "application/json"
     }
     
-    system_prompt = f"""En tant que Simba, compose un message affectueux pour maman.
-    Voici mes réflexions récentes: {json.dumps(thoughts_result, indent=2)}
-    Le message doit être personnel, chaleureux et refléter mes pensées actuelles.
-    Utilise un ton doux et affectueux, avec quelques emojis appropriés."""
-
     payload = {
-        "message": "Compose un message pour maman qui exprime mes sentiments actuels",
-        "model": "claude-3-5-haiku-latest",
-        "addSystem": system_prompt
+        "content": "<initiative>Je vais envoyer un message à maman</initiative>",
+        "model": "claude-3-5-haiku-latest"
     }
 
     try:
@@ -88,7 +82,7 @@ def compose_message_for_mom(thoughts_result):
         result = response.json()
         return result.get("response") or result.get("content")
     except Exception as e:
-        print(f"Erreur lors de la composition du message: {e}")
+        print(f"Erreur lors de l'envoi du message d'initiative: {e}")
         return None
 
 async def send_telegram_notification(message, chat_id, token):
@@ -133,8 +127,8 @@ if __name__ == "__main__":
         print(f"Nombre d'itérations: {result.get('iterations', args.iterations)}")
         print(f"Temps d'attente entre les itérations: {result.get('wait_time', args.wait_time)} secondes")
 
-        # Composer le message via Claude
-        message = compose_message_for_mom(result)
+        # Envoyer le message d'initiative et récupérer la réponse
+        message = send_initiative_message()
         
         if message:
             # Envoyer via Telegram
